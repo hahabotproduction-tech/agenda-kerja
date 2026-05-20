@@ -3,288 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Agenda Kerja - Sinkron Google Drive</title>
+    <title>Agenda Kerja - Satu Akun untuk Semua Perangkat</title>
     <style>
-        * {
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-        body {
-            font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
-            background: #e8eaed;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .app-container {
-            max-width: 500px;
-            width: 100%;
-            height: 100vh;
-            max-height: 900px;
-            background: #f5f5f5;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-        }
-        @media (min-width: 501px) {
-            .app-container { border-radius: 24px; height: 95vh; margin: 2vh auto; }
-        }
-        .header {
-            background: #1a73e8;
-            color: white;
-            padding: 16px;
-            font-size: 20px;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-shrink: 0;
-        }
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .header-actions {
-            display: flex;
-            gap: 12px;
-        }
-        .header-icon-btn {
-            background: rgba(255,255,255,0.2);
-            border: none;
-            border-radius: 30px;
-            padding: 6px 10px;
-            font-size: 18px;
-            cursor: pointer;
-            color: white;
-            transition: 0.2s;
-        }
-        .header-icon-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.4); }
-        .login-bar {
-            background: #fff;
-            padding: 8px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #ddd;
-            font-size: 14px;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        .btn-google {
-            background: #4285f4;
-            color: white;
-            border: none;
-            padding: 6px 14px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .main {
-            flex: 1;
-            overflow-y: auto;
-            padding: 12px;
-            -webkit-overflow-scrolling: touch;
-        }
-        .bottom-nav {
-            position: sticky;
-            bottom: 0;
-            background: white;
-            display: flex;
-            border-top: 1px solid #ddd;
-            flex-shrink: 0;
-        }
-        .nav-item {
-            flex: 1;
-            text-align: center;
-            padding: 12px 0;
-            cursor: pointer;
-            font-weight: 500;
-            color: #5f6368;
-            transition: 0.2s;
-        }
-        .nav-item.active {
-            color: #1a73e8;
-            border-bottom: 3px solid #1a73e8;
-        }
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 14px;
-            margin-bottom: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            cursor: pointer;
-            border-left: 5px solid;
-            transition: 0.1s;
-        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: #e8eaed; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .app-container { max-width: 500px; width: 100%; height: 100vh; max-height: 900px; background: #f5f5f5; display: flex; flex-direction: column; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+        @media (min-width: 501px) { .app-container { border-radius: 24px; height: 95vh; margin: 2vh auto; } }
+        .header { background: #1a73e8; color: white; padding: 16px; font-size: 20px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        .header-left { display: flex; align-items: center; gap: 12px; }
+        .header-actions { display: flex; gap: 12px; }
+        .header-icon-btn { background: rgba(255,255,255,0.2); border: none; border-radius: 30px; padding: 6px 10px; font-size: 18px; cursor: pointer; color: white; }
+        .login-bar { background: #fff; padding: 8px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; flex-wrap: wrap; gap: 8px; }
+        .btn-google { background: #4285f4; color: white; border: none; padding: 6px 14px; border-radius: 20px; cursor: pointer; font-weight: bold; }
+        .main { flex: 1; overflow-y: auto; padding: 12px; }
+        .bottom-nav { background: white; display: flex; border-top: 1px solid #ddd; flex-shrink: 0; }
+        .nav-item { flex: 1; text-align: center; padding: 12px 0; cursor: pointer; font-weight: 500; color: #5f6368; }
+        .nav-item.active { color: #1a73e8; border-bottom: 3px solid #1a73e8; }
+        .card { background: white; border-radius: 12px; padding: 14px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); cursor: pointer; border-left: 5px solid; }
         .card:active { transform: scale(0.98); }
         .card-booking { border-left-color: #f4b400; }
         .card-setup_qc { border-left-color: #4285f4; }
         .card-packing { border-left-color: #0f9d58; }
         .card-antar_cod { border-left-color: #db4437; }
         .card-riwayat { border-left-color: #9aa0a6; opacity: 0.8; }
-
-        .form-group {
-            margin-bottom: 12px;
-        }
-        .form-group label {
-            display: block;
-            font-size: 12px;
-            font-weight: 600;
-            margin-bottom: 4px;
-            color: #5f6368;
-        }
-        input, select, textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-family: inherit;
-            font-size: 14px;
-        }
-        button {
-            background: #1a73e8;
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 24px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        button:active { transform: scale(0.96); }
-        .btn-row {
-            display: flex;
-            gap: 10px;
-            margin-top: 16px;
-            flex-wrap: wrap;
-        }
-        .btn-danger {
-            background: white;
-            color: #db4437;
-            border: 1px solid #db4437;
-        }
-        .badge {
-            font-size: 10px;
-            padding: 4px 8px;
-            border-radius: 20px;
-            background: #eee;
-        }
-        .badge-warning {
-            background: #f44336;
-            color: white;
-        }
-        .toast {
-            position: fixed;
-            bottom: 80px;
-            left: 20px;
-            right: 20px;
-            background: #323232;
-            color: white;
-            text-align: center;
-            padding: 12px;
-            border-radius: 30px;
-            z-index: 999;
-            transition: 0.3s;
-        }
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
-            z-index: 1000;
-        }
-        .modal-content {
-            background: white;
-            width: 100%;
-            max-width: 500px;
-            border-radius: 20px 20px 0 0;
-            padding: 20px;
-            max-height: 85vh;
-            overflow-y: auto;
-        }
-        .detail-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #eee;
-        }
-        hr {
-            margin: 16px 0;
-        }
-        .tab-bar {
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            margin-bottom: 16px;
-            padding-bottom: 4px;
-        }
-        .tab-item {
-            background: #e0e0e0;
-            padding: 8px 16px;
-            border-radius: 30px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
-            white-space: nowrap;
-        }
-        .tab-item.active {
-            background: #1a73e8;
-            color: white;
-        }
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: #888;
-        }
-        .filter-bar {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
-            align-items: center;
-            background: white;
-            padding: 8px 12px;
-            border-radius: 30px;
-        }
-        .filter-bar input, .filter-bar select {
-            flex: 1;
-            min-width: 100px;
-        }
-        .filter-bar button {
-            background: #ddd;
-            color: #333;
-            padding: 8px 12px;
-            font-size: 12px;
-        }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; color: #5f6368; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 14px; }
+        button { background: #1a73e8; color: white; border: none; padding: 10px 16px; border-radius: 24px; font-weight: bold; cursor: pointer; }
+        .btn-row { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+        .btn-danger { background: white; color: #db4437; border: 1px solid #db4437; }
+        .badge { font-size: 10px; padding: 4px 8px; border-radius: 20px; background: #eee; }
+        .toast { position: fixed; bottom: 80px; left: 20px; right: 20px; background: #323232; color: white; text-align: center; padding: 12px; border-radius: 30px; z-index: 999; }
+        .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: flex-end; justify-content: center; z-index: 1000; }
+        .modal-content { background: white; width: 100%; max-width: 500px; border-radius: 20px 20px 0 0; padding: 20px; max-height: 85vh; overflow-y: auto; }
+        .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+        .tab-bar { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 16px; }
+        .tab-item { background: #e0e0e0; padding: 8px 16px; border-radius: 30px; cursor: pointer; font-size: 13px; white-space: nowrap; }
+        .tab-item.active { background: #1a73e8; color: white; }
+        .empty-state { text-align: center; padding: 40px; color: #888; }
+        .filter-bar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; background: white; padding: 8px 12px; border-radius: 30px; }
+        .filter-bar input, .filter-bar select { flex: 1; min-width: 100px; }
+        .info-akun { background: #fff3e0; padding: 6px 12px; border-radius: 20px; font-size: 12px; color: #e65100; text-align: center; margin-top: 4px; }
     </style>
 </head>
 <body>
-<div class="app-container" id="app">
+<div class="app-container">
     <div class="header">
-        <div class="header-left">
-            📋 Agenda Kerja
-            <span id="syncStatus" style="font-size:12px; background:rgba(255,255,255,0.2); padding:4px 8px; border-radius:20px;">🔒 offline</span>
-        </div>
+        <div class="header-left">📋 Agenda Kerja <span id="syncStatus" style="font-size:12px; background:rgba(255,255,255,0.2); padding:4px 8px; border-radius:20px;">🔒 offline</span></div>
         <div class="header-actions">
-            <button class="header-icon-btn" id="backupLocalBtn" title="Backup ke perangkat (download JSON)">💾</button>
-            <button class="header-icon-btn" id="restoreLocalBtn" title="Restore dari perangkat (upload JSON)">📂</button>
+            <button class="header-icon-btn" id="backupLocalBtn" title="Backup ke perangkat">💾</button>
+            <button class="header-icon-btn" id="restoreLocalBtn" title="Restore dari perangkat">📂</button>
         </div>
     </div>
     <div class="login-bar">
         <span id="userName">Belum login</span>
         <div style="display: flex; gap: 8px;">
             <button class="btn-google" id="loginBtn">🔑 Login dengan Google</button>
-            <button id="logoutBtn" style="display:none; background:#ddd; color:#333;">Logout</button>
+            <button id="logoutBtn" style="display:none;">Logout</button>
         </div>
     </div>
     <div class="main" id="mainContent"></div>
@@ -298,14 +73,16 @@
 <div id="modalContainer"></div>
 
 <script>
-    // ==================== KONFIGURASI ====================
+    // ========== KONFIGURASI ==========
     const CLIENT_ID = '290927486841-g81rcscpq89o88rvsp9ttteecipm92ih.apps.googleusercontent.com';
     const SCOPES = 'https://www.googleapis.com/auth/drive.file';
     const FILE_NAME = 'agenda_orders.json';
+    // === GANTI DENGAN EMAIL AKUN YANG DIGUNAKAN BERSAMA ===
+    const SHARED_ACCOUNT_EMAIL = 'hahabotproduction@gmail.com'; // <-- GANTI dengan email akun bersama
 
     let tokenClient = null;
     let accessToken = null;
-    let tokenExpiry = 0; // timestamp when token expires
+    let tokenExpiry = 0;
     let isLoggedIn = false;
     let allOrders = [];
     let currentPage = 'buat';
@@ -319,15 +96,22 @@
     const userNameSpan = document.getElementById('userName');
     const syncStatusSpan = document.getElementById('syncStatus');
 
-    // ==================== TOKEN STORAGE ====================
+    function showToast(msg, isError = false) {
+        const toast = document.getElementById('toastMsg');
+        toast.textContent = msg;
+        toast.style.background = isError ? '#db4437' : '#0f9d58';
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 2500);
+    }
+
+    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
+
+    // ========== TOKEN STORAGE ==========
     function saveTokenToStorage(token, expiresIn) {
-        if (token) {
-            localStorage.setItem('drive_access_token', token);
-            const expiry = Date.now() + (expiresIn * 1000);
-            localStorage.setItem('drive_token_expiry', expiry);
-            accessToken = token;
-            tokenExpiry = expiry;
-        }
+        localStorage.setItem('drive_access_token', token);
+        localStorage.setItem('drive_token_expiry', Date.now() + (expiresIn * 1000));
+        accessToken = token;
+        tokenExpiry = Date.now() + (expiresIn * 1000);
     }
 
     function loadTokenFromStorage() {
@@ -348,30 +132,9 @@
         tokenExpiry = 0;
     }
 
-    function isTokenValid() {
-        return accessToken && tokenExpiry > Date.now();
-    }
+    function isTokenValid() { return accessToken && tokenExpiry > Date.now(); }
 
-    // ==================== UI HELPERS ====================
-    function showToast(msg, isError = false) {
-        const toast = document.getElementById('toastMsg');
-        toast.textContent = msg;
-        toast.style.background = isError ? '#db4437' : '#0f9d58';
-        toast.style.display = 'block';
-        setTimeout(() => { toast.style.display = 'none'; }, 2500);
-    }
-
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
-    }
-
-    // ==================== BACKUP & RESTORE LOCAL ====================
+    // ========== BACKUP LOCAL ==========
     function backupLocal() {
         const dataStr = JSON.stringify({ lastUpdate: new Date().toISOString(), orders: allOrders }, null, 2);
         const blob = new Blob([dataStr], { type: 'application/json' });
@@ -379,11 +142,9 @@
         const a = document.createElement('a');
         a.href = url;
         a.download = `agenda_backup_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
-        document.body.appendChild(a);
         a.click();
-        document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        showToast('💾 Backup berhasil disimpan di perangkat');
+        showToast('💾 Backup tersimpan di perangkat');
     }
 
     function restoreLocal() {
@@ -401,29 +162,17 @@
                         allOrders = json.orders;
                         renderPage();
                         await autoSync();
-                        showToast(`✅ Restore berhasil, ${allOrders.length} order dimuat`);
-                    } else {
-                        throw new Error('Format file tidak valid');
-                    }
-                } catch (err) {
-                    showToast('Gagal restore: file tidak sesuai', true);
-                }
+                        showToast(`✅ Restore berhasil, ${allOrders.length} order`);
+                    } else throw new Error('Format salah');
+                } catch (err) { showToast('Gagal restore', true); }
             };
             reader.readAsText(file);
         };
         input.click();
     }
 
-    // ==================== GOOGLE DRIVE API ====================
-    function loadGisApi() {
-        return new Promise((resolve) => {
-            if (window.google?.accounts?.oauth2) return resolve();
-            const script = document.createElement('script');
-            script.src = 'https://accounts.google.com/gsi/client';
-            script.onload = resolve;
-            document.head.appendChild(script);
-        });
-    }
+    // ========== GOOGLE DRIVE API ==========
+    function loadGisApi() { return new Promise(resolve => { if (window.google?.accounts?.oauth2) resolve(); else { let s = document.createElement('script'); s.src = 'https://accounts.google.com/gsi/client'; s.onload = resolve; document.head.appendChild(s); } }); }
 
     async function initTokenClient() {
         await loadGisApi();
@@ -439,7 +188,6 @@
                     showToast('Login gagal: ' + resp.error, true);
                     return;
                 }
-                // Save token
                 saveTokenToStorage(resp.access_token, resp.expires_in);
                 isLoggedIn = true;
                 updateLoginUI();
@@ -449,29 +197,9 @@
         });
     }
 
-    async function silentLogin() {
-        if (!tokenClient) return false;
-        return new Promise((resolve) => {
-            tokenClient.callback = (resp) => {
-                if (resp.error) {
-                    console.warn('Silent login failed', resp);
-                    resolve(false);
-                } else {
-                    saveTokenToStorage(resp.access_token, resp.expires_in);
-                    isLoggedIn = true;
-                    updateLoginUI();
-                    resolve(true);
-                }
-            };
-            tokenClient.requestAccessToken({ prompt: '' });
-        });
-    }
-
     function login() {
-        if (!tokenClient) {
-            showToast('Client belum siap, coba lagi', true);
-            return;
-        }
+        if (!confirm(`Aplikasi ini menggunakan satu akun Google bersama: ${SHARED_ACCOUNT_EMAIL}\n\nPastikan Anda login dengan akun tersebut agar semua perangkat dapat mengakses data yang sama. Lanjutkan login?`)) return;
+        if (!tokenClient) { showToast('Client belum siap', true); return; }
         tokenClient.requestAccessToken({ prompt: 'consent' });
     }
 
@@ -489,12 +217,12 @@
         if (isLoggedIn && isTokenValid()) {
             loginBtn.style.display = 'none';
             logoutBtn.style.display = 'inline-block';
-            userNameSpan.textContent = '✅ Terhubung ke Drive';
+            userNameSpan.innerHTML = `✅ ${SHARED_ACCOUNT_EMAIL}`;
             syncStatusSpan.textContent = '☁️ online';
         } else {
             loginBtn.style.display = 'inline-block';
             logoutBtn.style.display = 'none';
-            userNameSpan.textContent = 'Belum login';
+            userNameSpan.innerHTML = `Belum login (gunakan ${SHARED_ACCOUNT_EMAIL})`;
             syncStatusSpan.textContent = '🔒 offline';
         }
     }
@@ -509,16 +237,12 @@
             let fileId = searchData.files?.[0]?.id;
 
             if (fileId) {
-                const downloadRes = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
-                    headers: { Authorization: `Bearer ${accessToken}` }
-                });
+                const downloadRes = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, { headers: { Authorization: `Bearer ${accessToken}` } });
                 if (downloadRes.ok) {
                     const json = await downloadRes.json();
                     allOrders = json.orders || [];
                     showToast(`Data dimuat dari Drive (${allOrders.length} order)`);
-                } else {
-                    allOrders = [];
-                }
+                } else allOrders = [];
             } else {
                 allOrders = [];
                 await saveToDrive(true);
@@ -529,99 +253,52 @@
         } catch (err) {
             console.error(err);
             syncStatusSpan.textContent = '⚠️ error';
-            showToast('Gagal membaca dari Drive: ' + err.message, true);
+            showToast('Gagal baca Drive: ' + err.message, true);
         }
     }
 
     async function saveToDrive(silent = false) {
-        if (!isLoggedIn || !isTokenValid()) {
-            if (!silent) showToast('Belum login atau token kadaluwarsa', true);
-            return false;
-        }
+        if (!isLoggedIn || !isTokenValid()) return false;
         syncStatusSpan.textContent = '⏳ sync...';
         try {
             const fileContent = JSON.stringify({ lastUpdate: new Date().toISOString(), orders: allOrders }, null, 2);
             const blob = new Blob([fileContent], { type: 'application/json' });
-
             const searchUrl = `https://www.googleapis.com/drive/v3/files?q=name='${FILE_NAME}' and trashed=false&fields=files(id,name)`;
             const searchRes = await fetch(searchUrl, { headers: { Authorization: `Bearer ${accessToken}` } });
             const searchData = await searchRes.json();
             let fileId = searchData.files?.[0]?.id;
-
+            const metadata = { name: FILE_NAME, mimeType: 'application/json' };
+            const form = new FormData();
+            form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+            form.append('file', blob);
             if (fileId) {
-                const metadata = { name: FILE_NAME, mimeType: 'application/json' };
-                const form = new FormData();
-                form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-                form.append('file', blob);
-                const updateRes = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart`, {
-                    method: 'PATCH',
-                    headers: { Authorization: `Bearer ${accessToken}` },
-                    body: form
-                });
-                if (!updateRes.ok) throw new Error('Update gagal');
+                await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart`, { method: 'PATCH', headers: { Authorization: `Bearer ${accessToken}` }, body: form });
             } else {
-                const metadata = { name: FILE_NAME, mimeType: 'application/json' };
-                const form = new FormData();
-                form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-                form.append('file', blob);
-                const createRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-                    method: 'POST',
-                    headers: { Authorization: `Bearer ${accessToken}` },
-                    body: form
-                });
-                if (!createRes.ok) throw new Error('Buat gagal');
+                await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', { method: 'POST', headers: { Authorization: `Bearer ${accessToken}` }, body: form });
             }
             syncStatusSpan.textContent = '☁️ online';
-            if (!silent) showToast('✅ Data tersimpan ke Google Drive');
+            if (!silent) showToast('✅ Data tersimpan ke Drive');
             return true;
         } catch (err) {
             console.error(err);
             syncStatusSpan.textContent = '⚠️ error';
-            if (!silent) showToast('Gagal simpan ke Drive: ' + err.message, true);
+            if (!silent) showToast('Gagal simpan Drive: ' + err.message, true);
             return false;
         }
     }
 
-    async function autoSync() {
-        if (!isLoggedIn || !isTokenValid()) return;
-        await saveToDrive(true);
-    }
+    async function autoSync() { if (isLoggedIn && isTokenValid()) await saveToDrive(true); }
 
-    // ==================== CRUD ORDER ====================
-    function generateId() {
-        return 'ORD-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6).toUpperCase();
-    }
+    // ========== CRUD ==========
+    function generateId() { return 'ORD-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6).toUpperCase(); }
+    async function addOrder(orderData) { orderData.id = generateId(); orderData.timestamp = new Date().toISOString(); allOrders.unshift(orderData); renderPage(); await autoSync(); }
+    async function updateOrderStatus(orderId, newStatus) { const idx = allOrders.findIndex(o => o.id === orderId); if (idx >= 0) { allOrders[idx].status_order = newStatus; allOrders[idx].timestamp = new Date().toISOString(); renderPage(); await autoSync(); return true; } return false; }
+    async function deleteOrder(orderId) { allOrders = allOrders.filter(o => o.id !== orderId); renderPage(); await autoSync(); }
 
-    async function addOrder(orderData) {
-        orderData.id = generateId();
-        orderData.timestamp = new Date().toISOString();
-        allOrders.unshift(orderData);
-        renderPage();
-        await autoSync();
-    }
-
-    async function updateOrderStatus(orderId, newStatus) {
-        const idx = allOrders.findIndex(o => o.id === orderId);
-        if (idx >= 0) {
-            allOrders[idx].status_order = newStatus;
-            allOrders[idx].timestamp = new Date().toISOString();
-            renderPage();
-            await autoSync();
-            return true;
-        }
-        return false;
-    }
-
-    async function deleteOrder(orderId) {
-        allOrders = allOrders.filter(o => o.id !== orderId);
-        renderPage();
-        await autoSync();
-    }
-
-    // ==================== RENDER UI ====================
+    // ========== RENDER ==========
     function renderPage() {
         if (!isLoggedIn || !isTokenValid()) {
-            mainDiv.innerHTML = `<div class="empty-state">🔐 Silakan login dengan Google untuk memulai<br><br><button onclick="login()" style="background:#4285f4;">Login Sekarang</button></div>`;
+            mainDiv.innerHTML = `<div class="empty-state">🔐 Gunakan akun bersama: <strong>${SHARED_ACCOUNT_EMAIL}</strong><br><br><button onclick="login()" style="background:#4285f4;">Login dengan Google</button><br><br><small>Pastikan login dengan akun di atas agar semua perangkat sinkron.</small></div>`;
             return;
         }
         if (currentPage === 'buat') renderBuatOrder();
@@ -631,38 +308,19 @@
 
     function renderBuatOrder() {
         const today = new Date().toISOString().split('T')[0];
-        mainDiv.innerHTML = `
-        <div style="background:white; border-radius:16px; padding:20px;">
-            <h3>📝 Order Baru</h3>
+        mainDiv.innerHTML = `<div style="background:white; border-radius:16px; padding:20px;"><h3>📝 Order Baru</h3>
             <div class="form-group"><label>📅 Tanggal</label><input type="date" id="tgl" value="${today}"></div>
             <div class="form-group"><label>🏍️ Status Pengiriman</label><select id="pengiriman"><option>Antar</option><option>Cod</option><option>Kirim</option></select></div>
             <div class="form-group"><label>👤 Nama Pelanggan</label><input id="nama" placeholder="Nama lengkap"></div>
             <div class="form-group"><label>📱 WhatsApp</label><input id="wa" placeholder="08123456789"></div>
-            <div class="form-group"><label>📦 Barang</label><input id="barang" placeholder="Nama barang / deskripsi"></div>
+            <div class="form-group"><label>📦 Barang</label><input id="barang" placeholder="Nama barang"></div>
             <div class="form-group"><label>📍 Alamat (opsional)</label><textarea id="alamat" rows="2"></textarea></div>
-            <div class="btn-row">
-                <button onclick="prosesSekarang()">⚡ Proses Sekarang (Setup QC)</button>
-                <button onclick="bookingOrder()" style="background:#f4b400;">📅 Booking</button>
-            </div>
+            <div class="btn-row"><button onclick="prosesSekarang()">⚡ Proses Sekarang (Setup QC)</button><button onclick="bookingOrder()" style="background:#f4b400;">📅 Booking</button></div>
         </div>`;
     }
 
-    window.prosesSekarang = async () => {
-        const data = ambilForm();
-        if (!data) return;
-        data.status_order = 'setup_qc';
-        await addOrder(data);
-        showToast('Order masuk ke Setup & QC');
-        resetForm();
-    };
-    window.bookingOrder = async () => {
-        const data = ambilForm();
-        if (!data) return;
-        data.status_order = 'booking';
-        await addOrder(data);
-        showToast('Order Booking tersimpan');
-        resetForm();
-    };
+    window.prosesSekarang = async () => { const data = ambilForm(); if(data) { data.status_order = 'setup_qc'; await addOrder(data); showToast('Order masuk ke Setup & QC'); resetForm(); } };
+    window.bookingOrder = async () => { const data = ambilForm(); if(data) { data.status_order = 'booking'; await addOrder(data); showToast('Booking tersimpan'); resetForm(); } };
     function ambilForm() {
         const tanggal = document.getElementById('tgl')?.value;
         const pengiriman = document.getElementById('pengiriman')?.value;
@@ -670,243 +328,96 @@
         const wa = document.getElementById('wa')?.value.trim();
         const barang = document.getElementById('barang')?.value.trim();
         const alamat = document.getElementById('alamat')?.value.trim();
-        if (!tanggal || !pengiriman || !nama || !wa || !barang) {
-            showToast('Lengkapi semua field wajib', true);
-            return null;
-        }
+        if (!tanggal || !pengiriman || !nama || !wa || !barang) { showToast('Lengkapi semua field', true); return null; }
         return { tanggal, status_pengiriman: pengiriman, nama_pelanggan: nama, nomor_wa: wa, barang, alamat: alamat || '' };
     }
-    function resetForm() {
-        if (document.getElementById('nama')) document.getElementById('nama').value = '';
-        if (document.getElementById('wa')) document.getElementById('wa').value = '';
-        if (document.getElementById('barang')) document.getElementById('barang').value = '';
-        if (document.getElementById('alamat')) document.getElementById('alamat').value = '';
-    }
+    function resetForm() { ['nama','wa','barang','alamat'].forEach(id => { let el = document.getElementById(id); if(el) el.value = ''; }); }
 
     function renderMyOrder() {
-        const tabs = [
-            { key: 'booking', label: '📅 Booking', filter: 'booking' },
-            { key: 'setup_qc', label: '⚙️ Setup & QC', filter: 'setup_qc' },
-            { key: 'packing', label: '📦 Packing & Kirim', filter: 'packing' },
-            { key: 'antar_cod', label: '🏍️ Antar/Cod', filter: 'antar_cod' }
-        ];
-        let tabsHtml = `<div class="tab-bar">`;
-        tabs.forEach(tab => {
-            tabsHtml += `<div class="tab-item ${currentSubTab === tab.key ? 'active' : ''}" onclick="setSubTab('${tab.key}')">${tab.label}</div>`;
-        });
-        tabsHtml += `</div><div id="subContent"></div>`;
+        const tabs = ['booking','setup_qc','packing','antar_cod'];
+        let tabsHtml = `<div class="tab-bar">` + tabs.map(t => `<div class="tab-item ${currentSubTab===t?'active':''}" onclick="setSubTab('${t}')">${t==='booking'?'📅 Booking':t==='setup_qc'?'⚙️ Setup':t==='packing'?'📦 Packing':'🏍️ Antar/Cod'}</div>`).join('') + `</div><div id="subContent"></div>`;
         mainDiv.innerHTML = tabsHtml;
         renderSubTab(currentSubTab);
     }
-
-    window.setSubTab = (tab) => {
-        currentSubTab = tab;
-        renderMyOrder();
-    };
-
+    window.setSubTab = (tab) => { currentSubTab = tab; renderMyOrder(); };
     function renderSubTab(subTab) {
         let filtered = allOrders.filter(o => o.status_order === subTab);
-        filtered.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+        filtered.sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp));
         const container = document.getElementById('subContent');
         if (!container) return;
-        if (filtered.length === 0) {
-            container.innerHTML = `<div class="empty-state">📭 Tidak ada order di kategori ini</div>`;
-            return;
-        }
+        if (filtered.length === 0) { container.innerHTML = `<div class="empty-state">📭 Tidak ada order</div>`; return; }
         const today = new Date().toISOString().split('T')[0];
         container.innerHTML = filtered.map(order => {
-            let badgeColor = '';
-            let badgeText = '';
+            let badgeColor, badgeText;
             if (order.status_order === 'booking') {
-                if (order.tanggal <= today) {
-                    badgeColor = '#f44336';
-                    badgeText = '⚠️ Perlu Konfirmasi';
-                } else {
-                    badgeColor = '#f4b400';
-                    badgeText = '📅 Booking';
-                }
-            } else if (order.status_order === 'setup_qc') {
-                badgeColor = '#4285f4';
-                badgeText = '⚙️ Setup & QC';
-            } else if (order.status_order === 'packing') {
-                badgeColor = '#0f9d58';
-                badgeText = '📦 Packing & Kirim';
-            } else if (order.status_order === 'antar_cod') {
-                badgeColor = '#db4437';
-                badgeText = '🏍️ Antar/Cod';
-            } else {
-                badgeColor = '#9aa0a6';
-                badgeText = '✅ Selesai';
-            }
-            return `<div class="card card-${order.status_order}" onclick="showDetail('${order.id}')">
-                <div style="display:flex; justify-content:space-between;"><b>👤 ${escapeHtml(order.nama_pelanggan)}</b><span class="badge" style="background:${badgeColor}; color:white;">${badgeText}</span></div>
-                <div style="font-size:13px; color:#666;">📅 ${order.tanggal} | ${order.status_pengiriman} | 📦 ${escapeHtml(order.barang)}</div>
-            </div>`;
+                if (order.tanggal <= today) { badgeColor = '#f44336'; badgeText = '⚠️ Perlu Konfirmasi'; }
+                else { badgeColor = '#f4b400'; badgeText = '📅 Booking'; }
+            } else if (order.status_order === 'setup_qc') { badgeColor = '#4285f4'; badgeText = '⚙️ Setup'; }
+            else if (order.status_order === 'packing') { badgeColor = '#0f9d58'; badgeText = '📦 Packing'; }
+            else { badgeColor = '#db4437'; badgeText = '🏍️ Antar/Cod'; }
+            return `<div class="card card-${order.status_order}" onclick="showDetail('${order.id}')"><div style="display:flex; justify-content:space-between;"><b>👤 ${escapeHtml(order.nama_pelanggan)}</b><span class="badge" style="background:${badgeColor}; color:white;">${badgeText}</span></div><div style="font-size:13px;">📅 ${order.tanggal} | ${order.status_pengiriman} | 📦 ${escapeHtml(order.barang)}</div></div>`;
         }).join('');
     }
 
     function renderRiwayat() {
         let riwayat = allOrders.filter(o => o.status_order === 'riwayat');
-        if (riwayatFilterDate) {
-            riwayat = riwayat.filter(o => o.tanggal === riwayatFilterDate);
-        }
-        if (riwayatFilterStatus) {
-            riwayat = riwayat.filter(o => o.status_pengiriman === riwayatFilterStatus);
-        }
-        riwayat.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
-        
-        const filterHtml = `
-        <div class="filter-bar">
-            <input type="date" id="filterTanggalRiwayat" value="${riwayatFilterDate}" placeholder="Filter tanggal">
-            <select id="filterStatusRiwayat">
-                <option value="">Semua Pengiriman</option>
-                <option value="Antar" ${riwayatFilterStatus === 'Antar' ? 'selected' : ''}>Antar</option>
-                <option value="Cod" ${riwayatFilterStatus === 'Cod' ? 'selected' : ''}>COD</option>
-                <option value="Kirim" ${riwayatFilterStatus === 'Kirim' ? 'selected' : ''}>Kirim</option>
-            </select>
-            <button onclick="applyRiwayatFilter()">Filter</button>
-            <button onclick="resetRiwayatFilter()">Reset</button>
-        </div>
-        <div id="riwayatList"></div>
-        `;
+        if (riwayatFilterDate) riwayat = riwayat.filter(o => o.tanggal === riwayatFilterDate);
+        if (riwayatFilterStatus) riwayat = riwayat.filter(o => o.status_pengiriman === riwayatFilterStatus);
+        riwayat.sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp));
+        const filterHtml = `<div class="filter-bar"><input type="date" id="filterTanggalRiwayat" value="${riwayatFilterDate}"><select id="filterStatusRiwayat"><option value="">Semua</option><option value="Antar" ${riwayatFilterStatus==='Antar'?'selected':''}>Antar</option><option value="Cod" ${riwayatFilterStatus==='Cod'?'selected':''}>COD</option><option value="Kirim" ${riwayatFilterStatus==='Kirim'?'selected':''}>Kirim</option></select><button onclick="applyRiwayatFilter()">Filter</button><button onclick="resetRiwayatFilter()">Reset</button></div><div id="riwayatList"></div>`;
         mainDiv.innerHTML = filterHtml;
         const listDiv = document.getElementById('riwayatList');
-        if (riwayat.length === 0) {
-            listDiv.innerHTML = `<div class="empty-state">📭 Tidak ada riwayat order</div>`;
-        } else {
-            listDiv.innerHTML = riwayat.map(order => `
-                <div class="card card-riwayat" onclick="showDetail('${order.id}')">
-                    <div style="display:flex; justify-content:space-between;"><b>👤 ${escapeHtml(order.nama_pelanggan)}</b><span class="badge">✅ Selesai</span></div>
-                    <div>📅 ${order.tanggal} | ${order.status_pengiriman} | 📦 ${escapeHtml(order.barang)}</div>
-                </div>
-            `).join('');
-        }
+        if (riwayat.length === 0) listDiv.innerHTML = `<div class="empty-state">📭 Tidak ada riwayat</div>`;
+        else listDiv.innerHTML = riwayat.map(order => `<div class="card card-riwayat" onclick="showDetail('${order.id}')"><div style="display:flex; justify-content:space-between;"><b>👤 ${escapeHtml(order.nama_pelanggan)}</b><span class="badge">✅ Selesai</span></div><div>📅 ${order.tanggal} | ${order.status_pengiriman} | 📦 ${escapeHtml(order.barang)}</div></div>`).join('');
     }
-
-    window.applyRiwayatFilter = () => {
-        riwayatFilterDate = document.getElementById('filterTanggalRiwayat')?.value || '';
-        riwayatFilterStatus = document.getElementById('filterStatusRiwayat')?.value || '';
-        renderRiwayat();
-    };
-    window.resetRiwayatFilter = () => {
-        riwayatFilterDate = '';
-        riwayatFilterStatus = '';
-        renderRiwayat();
-    };
+    window.applyRiwayatFilter = () => { riwayatFilterDate = document.getElementById('filterTanggalRiwayat')?.value||''; riwayatFilterStatus = document.getElementById('filterStatusRiwayat')?.value||''; renderRiwayat(); };
+    window.resetRiwayatFilter = () => { riwayatFilterDate=''; riwayatFilterStatus=''; renderRiwayat(); };
 
     window.showDetail = (id) => {
-        const order = allOrders.find(o => o.id === id);
-        if (!order) return;
+        const order = allOrders.find(o=>o.id===id); if(!order) return;
         const today = new Date().toISOString().split('T')[0];
-        let badgeText = '';
-        let badgeColor = '';
+        let badgeText, badgeColor;
         if (order.status_order === 'booking') {
-            if (order.tanggal <= today) {
-                badgeText = '⚠️ Perlu Konfirmasi';
-                badgeColor = '#f44336';
-            } else {
-                badgeText = '📅 Booking';
-                badgeColor = '#f4b400';
-            }
-        } else if (order.status_order === 'setup_qc') {
-            badgeText = '⚙️ Setup & QC';
-            badgeColor = '#4285f4';
-        } else if (order.status_order === 'packing') {
-            badgeText = '📦 Packing & Kirim';
-            badgeColor = '#0f9d58';
-        } else if (order.status_order === 'antar_cod') {
-            badgeText = '🏍️ Antar/Cod';
-            badgeColor = '#db4437';
-        } else {
-            badgeText = '✅ Selesai';
-            badgeColor = '#9aa0a6';
-        }
+            if (order.tanggal <= today) { badgeText='⚠️ Perlu Konfirmasi'; badgeColor='#f44336'; }
+            else { badgeText='📅 Booking'; badgeColor='#f4b400'; }
+        } else if (order.status_order === 'setup_qc') { badgeText='⚙️ Setup & QC'; badgeColor='#4285f4'; }
+        else if (order.status_order === 'packing') { badgeText='📦 Packing & Kirim'; badgeColor='#0f9d58'; }
+        else if (order.status_order === 'antar_cod') { badgeText='🏍️ Antar/Cod'; badgeColor='#db4437'; }
+        else { badgeText='✅ Selesai'; badgeColor='#9aa0a6'; }
         let actions = '';
-        if (order.status_order === 'booking') {
-            actions = `<div class="btn-row"><button onclick="waConfirm('${order.id}')">💬 WhatsApp</button><button onclick="lanjutProses('${order.id}')">▶️ Lanjutkan</button><button class="btn-danger" onclick="hapusOrderConfirm('${order.id}')">🗑️ Hapus</button></div>`;
-        } else if (order.status_order === 'setup_qc') {
-            actions = `<div class="btn-row"><button onclick="selesaiSetup('${order.id}')">✅ Selesai Setup</button><button class="btn-danger" onclick="hapusOrderConfirm('${order.id}')">Hapus</button></div>`;
-        } else if (order.status_order === 'packing') {
-            actions = `<div class="btn-row"><button onclick="selesaiPacking('${order.id}')">📦 Selesai Packing</button><button class="btn-danger" onclick="hapusOrderConfirm('${order.id}')">Hapus</button></div>`;
-        } else if (order.status_order === 'antar_cod') {
-            actions = `<div class="btn-row"><button onclick="selesaiAntar('${order.id}')">🏍️ Selesai Antar/Cod</button><button class="btn-danger" onclick="hapusOrderConfirm('${order.id}')">Hapus</button></div>`;
-        } else if (order.status_order === 'riwayat') {
-            actions = `<div class="btn-row"><button class="btn-danger" onclick="hapusOrderConfirm('${order.id}')">Hapus dari Riwayat</button></div>`;
-        }
-        const modalHtml = `
-        <div class="modal-content">
-            <h3>📋 Detail Order</h3>
-            <div style="text-align:center; margin-bottom:12px;"><span class="badge" style="background:${badgeColor}; color:white; padding:6px 12px;">${badgeText}</span></div>
-            <div class="detail-row"><span>📅 Tanggal</span><span>${order.tanggal}</span></div>
-            <div class="detail-row"><span>🏍️ Pengiriman</span><span>${order.status_pengiriman}</span></div>
-            <div class="detail-row"><span>👤 Pelanggan</span><span>${escapeHtml(order.nama_pelanggan)}</span></div>
-            <div class="detail-row"><span>📱 WhatsApp</span><span>${order.nomor_wa}</span></div>
-            <div class="detail-row"><span>📦 Barang</span><span>${escapeHtml(order.barang)}</span></div>
-            <div class="detail-row"><span>📍 Alamat</span><span>${escapeHtml(order.alamat || '-')}</span></div>
-            ${actions}
-            <button onclick="closeModal()" style="margin-top:16px; width:100%;">Tutup</button>
-        </div>`;
+        if (order.status_order === 'booking') actions = `<div class="btn-row"><button onclick="waConfirm('${order.id}')">💬 WhatsApp</button><button onclick="lanjutProses('${order.id}')">▶️ Lanjutkan</button><button class="btn-danger" onclick="hapusOrderConfirm('${order.id}')">🗑️ Hapus</button></div>`;
+        else if (order.status_order === 'setup_qc') actions = `<div class="btn-row"><button onclick="selesaiSetup('${order.id}')">✅ Selesai Setup</button><button class="btn-danger" onclick="hapusOrderConfirm('${order.id}')">Hapus</button></div>`;
+        else if (order.status_order === 'packing') actions = `<div class="btn-row"><button onclick="selesaiPacking('${order.id}')">📦 Selesai Packing</button><button class="btn-danger" onclick="hapusOrderConfirm('${order.id}')">Hapus</button></div>`;
+        else if (order.status_order === 'antar_cod') actions = `<div class="btn-row"><button onclick="selesaiAntar('${order.id}')">🏍️ Selesai Antar/Cod</button><button class="btn-danger" onclick="hapusOrderConfirm('${order.id}')">Hapus</button></div>`;
+        else if (order.status_order === 'riwayat') actions = `<div class="btn-row"><button class="btn-danger" onclick="hapusOrderConfirm('${order.id}')">Hapus dari Riwayat</button></div>`;
+        const modalHtml = `<div class="modal-content"><h3>📋 Detail Order</h3><div style="text-align:center;margin-bottom:12px;"><span class="badge" style="background:${badgeColor};color:white;padding:6px 12px;">${badgeText}</span></div>
+            <div class="detail-row"><span>📅 Tanggal</span><span>${order.tanggal}</span></div><div class="detail-row"><span>🏍️ Pengiriman</span><span>${order.status_pengiriman}</span></div>
+            <div class="detail-row"><span>👤 Pelanggan</span><span>${escapeHtml(order.nama_pelanggan)}</span></div><div class="detail-row"><span>📱 WhatsApp</span><span>${order.nomor_wa}</span></div>
+            <div class="detail-row"><span>📦 Barang</span><span>${escapeHtml(order.barang)}</span></div><div class="detail-row"><span>📍 Alamat</span><span>${escapeHtml(order.alamat || '-')}</span></div>
+            ${actions}<button onclick="closeModal()" style="margin-top:16px;width:100%;">Tutup</button></div>`;
         document.getElementById('modalContainer').innerHTML = `<div class="modal" onclick="closeModal(event)">${modalHtml}</div>`;
     };
-
-    window.closeModal = (e) => {
-        if (e && e.target !== e.currentTarget && e.target !== document.querySelector('.modal')) return;
-        document.getElementById('modalContainer').innerHTML = '';
-    };
-    window.waConfirm = (id) => {
-        const order = allOrders.find(o => o.id === id);
-        if (order) {
-            let wa = order.nomor_wa.replace(/\D/g, '');
-            if (wa.startsWith('0')) wa = '62' + wa.substr(1);
-            const msg = `Halo ${order.nama_pelanggan}, order anda ${order.barang} tanggal ${order.tanggal}. Apakah jadi dilanjutkan?`;
-            window.open(`https://wa.me/${wa}?text=${encodeURIComponent(msg)}`, '_blank');
-        }
-    };
+    window.closeModal = (e) => { if (e && e.target !== e.currentTarget && e.target !== document.querySelector('.modal')) return; document.getElementById('modalContainer').innerHTML = ''; };
+    window.waConfirm = (id) => { const o=allOrders.find(o=>o.id===id); if(o){ let wa=o.nomor_wa.replace(/\D/g,''); if(wa.startsWith('0')) wa='62'+wa.substr(1); window.open(`https://wa.me/${wa}?text=${encodeURIComponent(`Halo ${o.nama_pelanggan}, order ${o.barang} tanggal ${o.tanggal}. Apakah jadi?`)}`,'_blank'); } };
     window.lanjutProses = async (id) => { if(await updateOrderStatus(id,'setup_qc')) showToast('Lanjut ke Setup'); closeModal(); };
-    window.selesaiSetup = async (id) => {
-        const order = allOrders.find(o=>o.id===id);
-        const next = (order.status_pengiriman === 'Antar' || order.status_pengiriman === 'Cod') ? 'antar_cod' : 'packing';
-        if(await updateOrderStatus(id,next)) showToast(`Pindah ke ${next}`);
-        closeModal();
-    };
+    window.selesaiSetup = async (id) => { const o=allOrders.find(o=>o.id===id); const next = (o.status_pengiriman === 'Antar' || o.status_pengiriman === 'Cod') ? 'antar_cod' : 'packing'; if(await updateOrderStatus(id,next)) showToast(`Pindah ke ${next}`); closeModal(); };
     window.selesaiPacking = async (id) => { if(await updateOrderStatus(id,'riwayat')) showToast('Selesai → Riwayat'); closeModal(); };
     window.selesaiAntar = async (id) => { if(await updateOrderStatus(id,'riwayat')) showToast('Selesai → Riwayat'); closeModal(); };
-    window.hapusOrderConfirm = async (id) => { if(confirm('Yakin hapus order ini?')) { await deleteOrder(id); closeModal(); showToast('Order dihapus'); } };
+    window.hapusOrderConfirm = async (id) => { if(confirm('Yakin hapus?')) { await deleteOrder(id); closeModal(); showToast('Order dihapus'); } };
 
-    // ==================== NAVIGASI ====================
-    document.querySelectorAll('.nav-item').forEach(el => {
-        el.addEventListener('click', () => {
-            currentPage = el.getAttribute('data-page');
-            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-            el.classList.add('active');
-            renderPage();
-        });
-    });
+    // ========== NAVIGASI ==========
+    document.querySelectorAll('.nav-item').forEach(el => { el.addEventListener('click', () => { currentPage = el.getAttribute('data-page'); document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); el.classList.add('active'); renderPage(); }); });
     document.querySelector('.nav-item[data-page="buat"]').classList.add('active');
 
-    // ==================== INIT ====================
+    // ========== INIT ==========
     async function init() {
         await initTokenClient();
-        
-        // Coba muat token dari storage
-        if (loadTokenFromStorage()) {
-            isLoggedIn = true;
-            updateLoginUI();
-            // Coba silent login untuk refresh token jika perlu (tapi token masih valid)
-            // Jika token mendekati expired, kita bisa refresh, tapi untuk sederhana langsung load data
-            await loadDataFromDrive();
-        } else {
-            // Tidak ada token, tetap offline
-            updateLoginUI();
-            renderPage();
-        }
-        
+        if (loadTokenFromStorage()) { isLoggedIn = true; updateLoginUI(); await loadDataFromDrive(); }
+        else { updateLoginUI(); renderPage(); }
         loginBtn.onclick = login;
         logoutBtn.onclick = logout;
         document.getElementById('backupLocalBtn').onclick = backupLocal;
         document.getElementById('restoreLocalBtn').onclick = restoreLocal;
-        window.prosesSekarang = window.prosesSekarang;
-        window.bookingOrder = window.bookingOrder;
     }
     init();
 </script>
