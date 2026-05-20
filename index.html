@@ -30,7 +30,8 @@
         .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; color: #5f6368; }
         input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 14px; }
         button { background: #1a73e8; color: white; border: none; padding: 10px 16px; border-radius: 24px; font-weight: bold; cursor: pointer; }
-        .btn-row { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+        .btn-row { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; justify-content: center; }
+        .btn-row button { flex: 1; min-width: 120px; text-align: center; justify-content: center; }
         .btn-danger { background: white; color: #db4437; border: 1px solid #db4437; }
         .badge { font-size: 10px; padding: 4px 8px; border-radius: 20px; background: #eee; }
         .toast { position: fixed; bottom: 80px; left: 20px; right: 20px; background: #323232; color: white; text-align: center; padding: 12px; border-radius: 30px; z-index: 999; }
@@ -43,7 +44,8 @@
         .empty-state { text-align: center; padding: 40px; color: #888; }
         .filter-bar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; background: white; padding: 8px 12px; border-radius: 30px; }
         .filter-bar input, .filter-bar select { flex: 1; min-width: 100px; }
-        .info-akun { background: #fff3e0; padding: 6px 12px; border-radius: 20px; font-size: 12px; color: #e65100; text-align: center; margin-top: 4px; }
+        .modal-actions { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; justify-content: center; }
+        .modal-actions button { flex: 1; min-width: 100px; }
     </style>
 </head>
 <body>
@@ -316,7 +318,10 @@
             <div class="form-group"><label>📱 WhatsApp</label><input id="wa" placeholder="08123456789"></div>
             <div class="form-group"><label>📦 Barang</label><input id="barang" placeholder="Nama barang"></div>
             <div class="form-group"><label>📍 Alamat (opsional)</label><textarea id="alamat" rows="2"></textarea></div>
-            <div class="btn-row"><button onclick="prosesSekarang()">⚡ Proses Sekarang (Setup QC)</button><button onclick="bookingOrder()" style="background:#f4b400;">📅 Booking</button></div>
+            <div class="btn-row">
+                <button onclick="prosesSekarang()">⚡ Proses</button>
+                <button onclick="bookingOrder()" style="background:#f4b400;">📅 Booking</button>
+            </div>
         </div>`;
     }
 
@@ -335,7 +340,6 @@
     function resetForm() { ['nama','wa','barang','alamat'].forEach(id => { let el = document.getElementById(id); if(el) el.value = ''; }); }
 
     function renderMyOrder() {
-        // Hitung jumlah per status
         const countBooking = allOrders.filter(o => o.status_order === 'booking').length;
         const countSetup = allOrders.filter(o => o.status_order === 'setup_qc').length;
         const countPacking = allOrders.filter(o => o.status_order === 'packing').length;
@@ -403,11 +407,11 @@
         else if (order.status_order === 'antar_cod') { badgeText='🏍️ Antar/Cod'; badgeColor='#db4437'; }
         else { badgeText='✅ Selesai'; badgeColor='#9aa0a6'; }
         let actions = '';
-        if (order.status_order === 'booking') actions = `<div class="btn-row"><button onclick="waConfirm('${order.id}')">💬 WhatsApp</button><button onclick="lanjutProses('${order.id}')">▶️ Lanjutkan</button><button class="btn-danger" onclick="hapusOrderConfirm('${order.id}')">🗑️ Hapus</button></div>`;
-        else if (order.status_order === 'setup_qc') actions = `<div class="btn-row"><button onclick="selesaiSetup('${order.id}')">✅ Selesai Setup</button><button class="btn-danger" onclick="hapusOrderConfirm('${order.id}')">Hapus</button></div>`;
-        else if (order.status_order === 'packing') actions = `<div class="btn-row"><button onclick="selesaiPacking('${order.id}')">📦 Selesai Packing</button><button class="btn-danger" onclick="hapusOrderConfirm('${order.id}')">Hapus</button></div>`;
-        else if (order.status_order === 'antar_cod') actions = `<div class="btn-row"><button onclick="selesaiAntar('${order.id}')">🏍️ Selesai Antar/Cod</button><button class="btn-danger" onclick="hapusOrderConfirm('${order.id}')">Hapus</button></div>`;
-        else if (order.status_order === 'riwayat') actions = `<div class="btn-row"><button class="btn-danger" onclick="hapusOrderConfirm('${order.id}')">Hapus dari Riwayat</button></div>`;
+        if (order.status_order === 'booking') actions = `<div class="modal-actions"><button onclick="waConfirm('${order.id}')">💬 WhatsApp</button><button onclick="lanjutProses('${order.id}')">▶️ Lanjutkan</button><button class="btn-danger" onclick="hapusOrderConfirm('${order.id}')">🗑️ Hapus</button></div>`;
+        else if (order.status_order === 'setup_qc') actions = `<div class="modal-actions"><button onclick="selesaiSetup('${order.id}')">✅ Selesai Setup</button><button class="btn-danger" onclick="hapusOrderConfirm('${order.id}')">Hapus</button></div>`;
+        else if (order.status_order === 'packing') actions = `<div class="modal-actions"><button onclick="selesaiPacking('${order.id}')">📦 Selesai Packing</button><button class="btn-danger" onclick="hapusOrderConfirm('${order.id}')">Hapus</button></div>`;
+        else if (order.status_order === 'antar_cod') actions = `<div class="modal-actions"><button onclick="selesaiAntar('${order.id}')">🏍️ Selesai Antar/Cod</button><button class="btn-danger" onclick="hapusOrderConfirm('${order.id}')">Hapus</button></div>`;
+        else if (order.status_order === 'riwayat') actions = `<div class="modal-actions"><button class="btn-danger" onclick="hapusOrderConfirm('${order.id}')">Hapus dari Riwayat</button></div>`;
         const modalHtml = `<div class="modal-content"><h3>📋 Detail Order</h3><div style="text-align:center;margin-bottom:12px;"><span class="badge" style="background:${badgeColor};color:white;padding:6px 12px;">${badgeText}</span></div>
             <div class="detail-row"><span>📅 Tanggal</span><span>${order.tanggal}</span></div><div class="detail-row"><span>🏍️ Pengiriman</span><span>${order.status_pengiriman}</span></div>
             <div class="detail-row"><span>👤 Pelanggan</span><span>${escapeHtml(order.nama_pelanggan)}</span></div><div class="detail-row"><span>📱 WhatsApp</span><span>${order.nomor_wa}</span></div>
