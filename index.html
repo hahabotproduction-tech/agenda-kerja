@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Agenda Kerja - Satu Akun untuk Semua Perangkat</title>
+    <title>Agenda Kerja - Multi Perangkat Satu Akun</title>
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Segoe UI', Roboto, sans-serif; background: #e8eaed; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
@@ -51,6 +51,7 @@
     <div class="header">
         <div class="header-left">📋 Agenda Kerja <span id="syncStatus" style="font-size:12px; background:rgba(255,255,255,0.2); padding:4px 8px; border-radius:20px;">🔒 offline</span></div>
         <div class="header-actions">
+            <button class="header-icon-btn" id="refreshBtn" title="Refresh data dari Drive">🔄</button>
             <button class="header-icon-btn" id="backupLocalBtn" title="Backup ke perangkat">💾</button>
             <button class="header-icon-btn" id="restoreLocalBtn" title="Restore dari perangkat">📂</button>
         </div>
@@ -77,8 +78,8 @@
     const CLIENT_ID = '290927486841-g81rcscpq89o88rvsp9ttteecipm92ih.apps.googleusercontent.com';
     const SCOPES = 'https://www.googleapis.com/auth/drive.file';
     const FILE_NAME = 'agenda_orders.json';
-    // === GANTI DENGAN EMAIL AKUN YANG DIGUNAKAN BERSAMA ===
-    const SHARED_ACCOUNT_EMAIL = 'hahabotproduction@gmail.com'; // <-- GANTI dengan email akun bersama
+    // GANTI DENGAN EMAIL AKUN BERSAMA
+    const SHARED_ACCOUNT_EMAIL = 'hahabotproduction@gmail.com'; // <-- GANTI
 
     let tokenClient = null;
     let accessToken = null;
@@ -334,12 +335,29 @@
     function resetForm() { ['nama','wa','barang','alamat'].forEach(id => { let el = document.getElementById(id); if(el) el.value = ''; }); }
 
     function renderMyOrder() {
-        const tabs = ['booking','setup_qc','packing','antar_cod'];
-        let tabsHtml = `<div class="tab-bar">` + tabs.map(t => `<div class="tab-item ${currentSubTab===t?'active':''}" onclick="setSubTab('${t}')">${t==='booking'?'📅 Booking':t==='setup_qc'?'⚙️ Setup':t==='packing'?'📦 Packing':'🏍️ Antar/Cod'}</div>`).join('') + `</div><div id="subContent"></div>`;
+        // Hitung jumlah per status
+        const countBooking = allOrders.filter(o => o.status_order === 'booking').length;
+        const countSetup = allOrders.filter(o => o.status_order === 'setup_qc').length;
+        const countPacking = allOrders.filter(o => o.status_order === 'packing').length;
+        const countAntar = allOrders.filter(o => o.status_order === 'antar_cod').length;
+
+        const tabs = [
+            { key: 'booking', label: `📅 Booking (${countBooking})` },
+            { key: 'setup_qc', label: `⚙️ Setup & QC (${countSetup})` },
+            { key: 'packing', label: `📦 Packing & Kirim (${countPacking})` },
+            { key: 'antar_cod', label: `🏍️ Antar/Cod (${countAntar})` }
+        ];
+        let tabsHtml = `<div class="tab-bar">`;
+        tabs.forEach(tab => {
+            tabsHtml += `<div class="tab-item ${currentSubTab === tab.key ? 'active' : ''}" onclick="setSubTab('${tab.key}')">${tab.label}</div>`;
+        });
+        tabsHtml += `</div><div id="subContent"></div>`;
         mainDiv.innerHTML = tabsHtml;
         renderSubTab(currentSubTab);
     }
+
     window.setSubTab = (tab) => { currentSubTab = tab; renderMyOrder(); };
+    
     function renderSubTab(subTab) {
         let filtered = allOrders.filter(o => o.status_order === subTab);
         filtered.sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp));
@@ -405,6 +423,16 @@
     window.selesaiAntar = async (id) => { if(await updateOrderStatus(id,'riwayat')) showToast('Selesai → Riwayat'); closeModal(); };
     window.hapusOrderConfirm = async (id) => { if(confirm('Yakin hapus?')) { await deleteOrder(id); closeModal(); showToast('Order dihapus'); } };
 
+    // ========== REFRESH MANUAL ==========
+    async function manualRefresh() {
+        if (!isLoggedIn || !isTokenValid()) {
+            showToast('Anda belum login', true);
+            return;
+        }
+        showToast('Menyegarkan data dari Drive...');
+        await loadDataFromDrive();
+    }
+
     // ========== NAVIGASI ==========
     document.querySelectorAll('.nav-item').forEach(el => { el.addEventListener('click', () => { currentPage = el.getAttribute('data-page'); document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); el.classList.add('active'); renderPage(); }); });
     document.querySelector('.nav-item[data-page="buat"]').classList.add('active');
@@ -418,6 +446,7 @@
         logoutBtn.onclick = logout;
         document.getElementById('backupLocalBtn').onclick = backupLocal;
         document.getElementById('restoreLocalBtn').onclick = restoreLocal;
+        document.getElementById('refreshBtn').onclick = manualRefresh;
     }
     init();
 </script>
