@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Agenda Kerja - Sesi Panjang Otomatis</title>
+    <title>Agenda Kerja - Sesi Panjang & Notifikasi</title>
+    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADKSURBVDhPrZPPSsNAEMZ/UTwJniR48+BNL4IgiFfxBXzVPoLpSQRvQkHx4lGQ2oO0f5Zkk07aDfaDYZf5MrPfbGZCCkQ5jqU2m83Y931J0uV6vVZCiLVpmsJmsxnnQohLgI8kSXJj27YQB7wDwDTLsoS2bW3HcYTSNA0sy5JAP/zZtm3Az/OcpZRqwzB0d+coiBgGcJyG1FWVUQoh4DySJEmfZVlGt9vtVhB2HIdns9kRgCzLfgB2XbcAqOs6mUwmo9lsFk4mk5MPCjOdTgPLsizgq3jnFb8BpPc/QfHh9HUAAAAASUVORK5CYII=">
     <style>
+        /* (CSS sama seperti sebelumnya, hanya tambahan sedikit) */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Segoe UI', Roboto, sans-serif; background: #e8eaed; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
         .app-container { max-width: 500px; width: 100%; height: 100vh; max-height: 900px; background: #f5f5f5; display: flex; flex-direction: column; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
@@ -92,6 +94,7 @@
     let riwayatFilterDate = '';
     let riwayatFilterStatus = '';
     let refreshInterval = null;
+    let notificationPermissionGranted = false;
 
     const mainDiv = document.getElementById('mainContent');
     const loginBtn = document.getElementById('loginBtn');
@@ -99,6 +102,44 @@
     const userNameSpan = document.getElementById('userName');
     const syncStatusSpan = document.getElementById('syncStatus');
 
+    // ========== NOTIFIKASI ==========
+    async function requestNotificationPermission() {
+        if (!("Notification" in window)) {
+            console.log("Browser tidak mendukung notifikasi");
+            return;
+        }
+        if (Notification.permission === "granted") {
+            notificationPermissionGranted = true;
+        } else if (Notification.permission !== "denied") {
+            const permission = await Notification.requestPermission();
+            notificationPermissionGranted = permission === "granted";
+        }
+    }
+
+    function showNotification(title, body) {
+        if (notificationPermissionGranted && document.visibilityState !== "visible") {
+            // Tampilkan notifikasi hanya jika aplikasi tidak sedang aktif di tab
+            new Notification(title, { body, icon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADKSURBVDhPrZPPSsNAEMZ/UTwJniR48+BNL4IgiFfxBXzVPoLpSQRvQkHx4lGQ2oO0f5Zkk07aDfaDYZf5MrPfbGZCCkQ5jqU2m83Y931J0uV6vVZCiLVpmsJmsxnnQohLgI8kSXJj27YQB7wDwDTLsoS2bW3HcYTSNA0sy5JAP/zZtm3Az/OcpZRqwzB0d+coiBgGcJyG1FWVUQoh4DySJEmfZVlGt9vtVhB2HIdns9kRgCzLfgB2XbcAqOs6mUwmo9lsFk4mk5MPCjOdTgPLsizgq3jnFb8BpPc/QfHh9HUAAAAASUVORK5CYII=" });
+        } else if (document.visibilityState === "visible") {
+            // Jika aplikasi aktif, tampilkan toast saja
+            showToast(`⚠️ ${title}: ${body}`);
+        }
+    }
+
+    function checkAndNotifyExpiredBookings() {
+        const today = new Date().toISOString().split('T')[0];
+        const expiredBookings = allOrders.filter(o => o.status_order === 'booking' && o.tanggal <= today);
+        if (expiredBookings.length > 0) {
+            // Ubah judul halaman untuk menarik perhatian
+            document.title = `⚠️ (${expiredBookings.length}) Agenda Kerja`;
+            showNotification("Perlu Konfirmasi", `${expiredBookings.length} order booking sudah melewati tanggal. Segera konfirmasi ke pelanggan.`);
+        } else {
+            document.title = "Agenda Kerja";
+        }
+        // Update badge di MyOrder nanti otomatis
+    }
+
+    // ========== TOAST ==========
     function showToast(msg, isError = false) {
         const toast = document.getElementById('toastMsg');
         toast.textContent = msg;
@@ -109,7 +150,7 @@
 
     function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
 
-    // ========== TOKEN STORAGE ==========
+    // ========== TOKEN STORAGE & REFRESH ==========
     function saveTokenToStorage(token, expiresIn) {
         localStorage.setItem('drive_access_token', token);
         const expiry = Date.now() + (expiresIn * 1000);
@@ -136,15 +177,12 @@
         tokenExpiry = 0;
     }
 
-    function isTokenValid() {
-        return accessToken && tokenExpiry > Date.now();
-    }
+    function isTokenValid() { return accessToken && tokenExpiry > Date.now(); }
 
-    // ========== SILENT TOKEN REFRESH ==========
     async function refreshTokenIfNeeded() {
         if (!isLoggedIn || !tokenClient) return false;
         const timeToExpiry = tokenExpiry - Date.now();
-        if (timeToExpiry < 300000) { // kurang dari 5 menit
+        if (timeToExpiry < 300000) {
             console.log("Token mendekati kadaluwarsa, refresh...");
             return new Promise((resolve) => {
                 tokenClient.requestAccessToken({ prompt: '' }, (resp) => {
@@ -201,6 +239,7 @@
                         renderPage();
                         await autoSync();
                         showToast(`✅ Restore berhasil, ${allOrders.length} order`);
+                        checkAndNotifyExpiredBookings();
                     } else throw new Error('Format salah');
                 } catch (err) { showToast('Gagal restore', true); }
             };
@@ -243,14 +282,18 @@
     }
 
     function logout() {
-        if (refreshInterval) clearInterval(refreshInterval);
-        clearTokenStorage();
-        accessToken = null;
-        isLoggedIn = false;
-        allOrders = [];
-        updateLoginUI();
-        renderPage();
-        showToast('Logout, data lokal dihapus');
+        // Konfirmasi logout
+        if (confirm("Apakah Anda yakin ingin logout? Data akan tetap tersimpan di Drive, Anda bisa login kembali nanti.")) {
+            if (refreshInterval) clearInterval(refreshInterval);
+            clearTokenStorage();
+            accessToken = null;
+            isLoggedIn = false;
+            allOrders = [];
+            updateLoginUI();
+            renderPage();
+            showToast('Logout, data lokal dihapus');
+            document.title = "Agenda Kerja";
+        }
     }
 
     function updateLoginUI() {
@@ -302,6 +345,7 @@
                 showToast('File baru dibuat di Drive');
             }
             renderPage();
+            checkAndNotifyExpiredBookings();
             syncStatusSpan.textContent = '☁️ online';
         } catch (err) {
             console.error(err);
@@ -344,9 +388,9 @@
 
     // ========== CRUD ==========
     function generateId() { return 'ORD-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6).toUpperCase(); }
-    async function addOrder(orderData) { orderData.id = generateId(); orderData.timestamp = new Date().toISOString(); allOrders.unshift(orderData); renderPage(); await autoSync(); }
-    async function updateOrderStatus(orderId, newStatus) { const idx = allOrders.findIndex(o => o.id === orderId); if (idx >= 0) { allOrders[idx].status_order = newStatus; allOrders[idx].timestamp = new Date().toISOString(); renderPage(); await autoSync(); return true; } return false; }
-    async function deleteOrder(orderId) { allOrders = allOrders.filter(o => o.id !== orderId); renderPage(); await autoSync(); }
+    async function addOrder(orderData) { orderData.id = generateId(); orderData.timestamp = new Date().toISOString(); allOrders.unshift(orderData); renderPage(); await autoSync(); checkAndNotifyExpiredBookings(); }
+    async function updateOrderStatus(orderId, newStatus) { const idx = allOrders.findIndex(o => o.id === orderId); if (idx >= 0) { allOrders[idx].status_order = newStatus; allOrders[idx].timestamp = new Date().toISOString(); renderPage(); await autoSync(); checkAndNotifyExpiredBookings(); return true; } return false; }
+    async function deleteOrder(orderId) { allOrders = allOrders.filter(o => o.id !== orderId); renderPage(); await autoSync(); checkAndNotifyExpiredBookings(); }
 
     // ========== RENDER ==========
     function renderPage() {
@@ -490,6 +534,7 @@
 
     // ========== INIT ==========
     async function init() {
+        await requestNotificationPermission();
         await initTokenClient();
         if (loadTokenFromStorage()) {
             isLoggedIn = true;
