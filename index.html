@@ -3,10 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Agenda Kerja - Sesi Panjang & Notifikasi</title>
-    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADKSURBVDhPrZPPSsNAEMZ/UTwJniR48+BNL4IgiFfxBXzVPoLpSQRvQkHx4lGQ2oO0f5Zkk07aDfaDYZf5MrPfbGZCCkQ5jqU2m83Y931J0uV6vVZCiLVpmsJmsxnnQohLgI8kSXJj27YQB7wDwDTLsoS2bW3HcYTSNA0sy5JAP/zZtm3Az/OcpZRqwzB0d+coiBgGcJyG1FWVUQoh4DySJEmfZVlGt9vtVhB2HIdns9kRgCzLfgB2XbcAqOs6mUwmo9lsFk4mk5MPCjOdTgPLsizgq3jnFb8BpPc/QfHh9HUAAAAASUVORK5CYII=">
+    <title>Agenda Kerja - Loading & Alamat Lebih Besar</title>
     <style>
-        /* (CSS sama seperti sebelumnya, hanya tambahan sedikit) */
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Segoe UI', Roboto, sans-serif; background: #e8eaed; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
         .app-container { max-width: 500px; width: 100%; height: 100vh; max-height: 900px; background: #f5f5f5; display: flex; flex-direction: column; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
@@ -14,10 +12,11 @@
         .header { background: #1a73e8; color: white; padding: 16px; font-size: 20px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
         .header-left { display: flex; align-items: center; gap: 12px; }
         .header-actions { display: flex; gap: 12px; }
-        .header-icon-btn { background: rgba(255,255,255,0.2); border: none; border-radius: 30px; padding: 6px 10px; font-size: 18px; cursor: pointer; color: white; }
+        .header-icon-btn { background: rgba(255,255,255,0.2); border: none; border-radius: 30px; padding: 6px 10px; font-size: 18px; cursor: pointer; color: white; transition: 0.2s; }
+        .header-icon-btn:active { transform: scale(0.95); }
         .login-bar { background: #fff; padding: 8px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; flex-wrap: wrap; gap: 8px; }
         .btn-google { background: #4285f4; color: white; border: none; padding: 6px 14px; border-radius: 20px; cursor: pointer; font-weight: bold; }
-        .main { flex: 1; overflow-y: auto; padding: 12px; }
+        .main { flex: 1; overflow-y: auto; padding: 12px; position: relative; }
         .bottom-nav { background: white; display: flex; border-top: 1px solid #ddd; flex-shrink: 0; }
         .nav-item { flex: 1; text-align: center; padding: 12px 0; cursor: pointer; font-weight: 500; color: #5f6368; }
         .nav-item.active { color: #1a73e8; border-bottom: 3px solid #1a73e8; }
@@ -31,12 +30,15 @@
         .form-group { margin-bottom: 12px; }
         .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; color: #5f6368; }
         input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 14px; }
-        button { background: #1a73e8; color: white; border: none; padding: 10px 16px; border-radius: 24px; font-weight: bold; cursor: pointer; }
+        textarea { resize: vertical; min-height: 80px; }
+        button { background: #1a73e8; color: white; border: none; padding: 10px 16px; border-radius: 24px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        button:active { transform: scale(0.96); }
+        button:disabled { opacity: 0.6; transform: none; cursor: not-allowed; }
         .btn-row { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; justify-content: center; }
         .btn-row button { flex: 1; min-width: 120px; text-align: center; justify-content: center; }
         .btn-danger { background: white; color: #db4437; border: 1px solid #db4437; }
         .badge { font-size: 10px; padding: 4px 8px; border-radius: 20px; background: #eee; }
-        .toast { position: fixed; bottom: 80px; left: 20px; right: 20px; background: #323232; color: white; text-align: center; padding: 12px; border-radius: 30px; z-index: 999; }
+        .toast { position: fixed; bottom: 80px; left: 20px; right: 20px; background: #323232; color: white; text-align: center; padding: 12px; border-radius: 30px; z-index: 999; transition: 0.3s; }
         .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: flex-end; justify-content: center; z-index: 1000; }
         .modal-content { background: white; width: 100%; max-width: 500px; border-radius: 20px 20px 0 0; padding: 20px; max-height: 85vh; overflow-y: auto; }
         .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
@@ -48,12 +50,43 @@
         .filter-bar input, .filter-bar select { flex: 1; min-width: 100px; }
         .modal-actions { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; justify-content: center; }
         .modal-actions button { flex: 1; min-width: 100px; }
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            backdrop-filter: blur(2px);
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #1a73e8;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            background: white;
+            padding: 10px;
+            border-radius: 50%;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loading-text {
+            background: white;
+            padding: 12px 20px;
+            border-radius: 30px;
+            margin-top: 20px;
+            font-weight: bold;
+            color: #1a73e8;
+        }
     </style>
 </head>
 <body>
 <div class="app-container">
     <div class="header">
-        <div class="header-left">📋 Agenda Kerja <span id="syncStatus" style="font-size:12px; background:rgba(255,255,255,0.2); padding:4px 8px; border-radius:20px;">🔒 offline</span></div>
+        <div class="header-left">Agenda Kerja <span id="syncStatus" style="font-size:12px; background:rgba(255,255,255,0.2); padding:4px 8px; border-radius:20px;">🔒 offline</span></div>
         <div class="header-actions">
             <button class="header-icon-btn" id="refreshBtn" title="Refresh data dari Drive">🔄</button>
             <button class="header-icon-btn" id="backupLocalBtn" title="Backup ke perangkat">💾</button>
@@ -76,13 +109,19 @@
 </div>
 <div id="toastMsg" class="toast" style="display:none;"></div>
 <div id="modalContainer"></div>
+<div id="loadingOverlay" style="display:none;" class="loading-overlay">
+    <div style="text-align:center;">
+        <div class="spinner"></div>
+        <div class="loading-text">Menyimpan data...</div>
+    </div>
+</div>
 
 <script>
     // ========== KONFIGURASI ==========
     const CLIENT_ID = '290927486841-g81rcscpq89o88rvsp9ttteecipm92ih.apps.googleusercontent.com';
     const SCOPES = 'https://www.googleapis.com/auth/drive.file';
     const FILE_NAME = 'agenda_orders.json';
-    const SHARED_ACCOUNT_EMAIL = 'hahabotproduction@gmail.com'; // GANTI DENGAN EMAIL BERSAMA
+    const SHARED_ACCOUNT_EMAIL = 'hahabotproduction@gmail.com'; // GANTI
 
     let tokenClient = null;
     let accessToken = null;
@@ -95,22 +134,44 @@
     let riwayatFilterStatus = '';
     let refreshInterval = null;
     let notificationPermissionGranted = false;
+    let loadingCount = 0;
 
     const mainDiv = document.getElementById('mainContent');
     const loginBtn = document.getElementById('loginBtn');
     const logoutBtn = document.getElementById('logoutBtn');
     const userNameSpan = document.getElementById('userName');
     const syncStatusSpan = document.getElementById('syncStatus');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+
+    function showLoading(show, text = "Menyimpan data...") {
+        if (show) {
+            loadingCount++;
+            loadingOverlay.style.display = 'flex';
+            const textDiv = loadingOverlay.querySelector('.loading-text');
+            if (textDiv) textDiv.textContent = text;
+        } else {
+            loadingCount--;
+            if (loadingCount <= 0) {
+                loadingCount = 0;
+                loadingOverlay.style.display = 'none';
+            }
+        }
+    }
+
+    async function withLoading(promise, text) {
+        showLoading(true, text);
+        try {
+            return await promise;
+        } finally {
+            showLoading(false);
+        }
+    }
 
     // ========== NOTIFIKASI ==========
     async function requestNotificationPermission() {
-        if (!("Notification" in window)) {
-            console.log("Browser tidak mendukung notifikasi");
-            return;
-        }
-        if (Notification.permission === "granted") {
-            notificationPermissionGranted = true;
-        } else if (Notification.permission !== "denied") {
+        if (!("Notification" in window)) return;
+        if (Notification.permission === "granted") notificationPermissionGranted = true;
+        else if (Notification.permission !== "denied") {
             const permission = await Notification.requestPermission();
             notificationPermissionGranted = permission === "granted";
         }
@@ -118,10 +179,8 @@
 
     function showNotification(title, body) {
         if (notificationPermissionGranted && document.visibilityState !== "visible") {
-            // Tampilkan notifikasi hanya jika aplikasi tidak sedang aktif di tab
             new Notification(title, { body, icon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADKSURBVDhPrZPPSsNAEMZ/UTwJniR48+BNL4IgiFfxBXzVPoLpSQRvQkHx4lGQ2oO0f5Zkk07aDfaDYZf5MrPfbGZCCkQ5jqU2m83Y931J0uV6vVZCiLVpmsJmsxnnQohLgI8kSXJj27YQB7wDwDTLsoS2bW3HcYTSNA0sy5JAP/zZtm3Az/OcpZRqwzB0d+coiBgGcJyG1FWVUQoh4DySJEmfZVlGt9vtVhB2HIdns9kRgCzLfgB2XbcAqOs6mUwmo9lsFk4mk5MPCjOdTgPLsizgq3jnFb8BpPc/QfHh9HUAAAAASUVORK5CYII=" });
         } else if (document.visibilityState === "visible") {
-            // Jika aplikasi aktif, tampilkan toast saja
             showToast(`⚠️ ${title}: ${body}`);
         }
     }
@@ -130,13 +189,11 @@
         const today = new Date().toISOString().split('T')[0];
         const expiredBookings = allOrders.filter(o => o.status_order === 'booking' && o.tanggal <= today);
         if (expiredBookings.length > 0) {
-            // Ubah judul halaman untuk menarik perhatian
             document.title = `⚠️ (${expiredBookings.length}) Agenda Kerja`;
-            showNotification("Perlu Konfirmasi", `${expiredBookings.length} order booking sudah melewati tanggal. Segera konfirmasi ke pelanggan.`);
+            showNotification("Perlu Konfirmasi", `${expiredBookings.length} order booking sudah melewati tanggal.`);
         } else {
             document.title = "Agenda Kerja";
         }
-        // Update badge di MyOrder nanti otomatis
     }
 
     // ========== TOAST ==========
@@ -150,13 +207,12 @@
 
     function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
 
-    // ========== TOKEN STORAGE & REFRESH ==========
+    // ========== TOKEN STORAGE ==========
     function saveTokenToStorage(token, expiresIn) {
         localStorage.setItem('drive_access_token', token);
-        const expiry = Date.now() + (expiresIn * 1000);
-        localStorage.setItem('drive_token_expiry', expiry);
+        localStorage.setItem('drive_token_expiry', Date.now() + (expiresIn * 1000));
         accessToken = token;
-        tokenExpiry = expiry;
+        tokenExpiry = Date.now() + (expiresIn * 1000);
     }
 
     function loadTokenFromStorage() {
@@ -183,18 +239,13 @@
         if (!isLoggedIn || !tokenClient) return false;
         const timeToExpiry = tokenExpiry - Date.now();
         if (timeToExpiry < 300000) {
-            console.log("Token mendekati kadaluwarsa, refresh...");
+            console.log("Token refresh...");
             return new Promise((resolve) => {
                 tokenClient.requestAccessToken({ prompt: '' }, (resp) => {
                     if (resp && !resp.error) {
                         saveTokenToStorage(resp.access_token, resp.expires_in);
-                        console.log("Token refreshed");
-                        showToast("Sesi diperpanjang", false);
                         resolve(true);
-                    } else {
-                        console.warn("Refresh gagal, perlu login ulang");
-                        resolve(false);
-                    }
+                    } else { resolve(false); }
                 });
             });
         }
@@ -204,9 +255,7 @@
     function startTokenRefreshTimer() {
         if (refreshInterval) clearInterval(refreshInterval);
         refreshInterval = setInterval(async () => {
-            if (isLoggedIn && isTokenValid()) {
-                await refreshTokenIfNeeded();
-            }
+            if (isLoggedIn && isTokenValid()) await refreshTokenIfNeeded();
         }, 60000);
     }
 
@@ -220,7 +269,7 @@
         a.download = `agenda_backup_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
         a.click();
         URL.revokeObjectURL(url);
-        showToast('💾 Backup tersimpan di perangkat');
+        showToast('💾 Backup tersimpan');
     }
 
     function restoreLocal() {
@@ -237,10 +286,10 @@
                     if (json.orders && Array.isArray(json.orders)) {
                         allOrders = json.orders;
                         renderPage();
-                        await autoSync();
+                        await withLoading(autoSync(), "Menyimpan ke Drive...");
                         showToast(`✅ Restore berhasil, ${allOrders.length} order`);
                         checkAndNotifyExpiredBookings();
-                    } else throw new Error('Format salah');
+                    } else throw new Error();
                 } catch (err) { showToast('Gagal restore', true); }
             };
             reader.readAsText(file);
@@ -258,7 +307,6 @@
             scope: SCOPES,
             callback: (resp) => {
                 if (resp.error) {
-                    console.error(resp);
                     isLoggedIn = false;
                     clearTokenStorage();
                     updateLoginUI();
@@ -268,30 +316,28 @@
                 saveTokenToStorage(resp.access_token, resp.expires_in);
                 isLoggedIn = true;
                 updateLoginUI();
-                showToast('✅ Login berhasil, sinkronisasi data...');
-                loadDataFromDrive();
+                showToast('✅ Login berhasil');
+                withLoading(loadDataFromDrive(), "Memuat data dari Drive...");
                 startTokenRefreshTimer();
             },
         });
     }
 
     function login() {
-        if (!confirm(`Aplikasi ini menggunakan satu akun Google bersama: ${SHARED_ACCOUNT_EMAIL}\n\nPastikan Anda login dengan akun tersebut agar semua perangkat dapat mengakses data yang sama. Lanjutkan login?`)) return;
+        if (!confirm(`Aplikasi ini menggunakan satu akun: ${SHARED_ACCOUNT_EMAIL}\nLanjutkan login?`)) return;
         if (!tokenClient) { showToast('Client belum siap', true); return; }
         tokenClient.requestAccessToken({ prompt: 'consent' });
     }
 
     function logout() {
-        // Konfirmasi logout
-        if (confirm("Apakah Anda yakin ingin logout? Data akan tetap tersimpan di Drive, Anda bisa login kembali nanti.")) {
+        if (confirm("Yakin logout? Data tetap tersimpan di Drive.")) {
             if (refreshInterval) clearInterval(refreshInterval);
             clearTokenStorage();
-            accessToken = null;
             isLoggedIn = false;
             allOrders = [];
             updateLoginUI();
             renderPage();
-            showToast('Logout, data lokal dihapus');
+            showToast('Logout');
             document.title = "Agenda Kerja";
         }
     }
@@ -305,7 +351,7 @@
         } else {
             loginBtn.style.display = 'inline-block';
             logoutBtn.style.display = 'none';
-            userNameSpan.innerHTML = `Belum login (gunakan ${SHARED_ACCOUNT_EMAIL})`;
+            userNameSpan.innerHTML = `Belum login (${SHARED_ACCOUNT_EMAIL})`;
             syncStatusSpan.textContent = '🔒 offline';
         }
     }
@@ -315,7 +361,7 @@
         if (!isTokenValid()) {
             const refreshed = await refreshTokenIfNeeded();
             if (!refreshed) {
-                showToast('Sesi habis, silakan login ulang', true);
+                showToast('Sesi habis, login ulang', true);
                 logout();
                 return false;
             }
@@ -331,18 +377,17 @@
             const searchRes = await fetch(searchUrl, { headers: { Authorization: `Bearer ${accessToken}` } });
             const searchData = await searchRes.json();
             let fileId = searchData.files?.[0]?.id;
-
             if (fileId) {
                 const downloadRes = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, { headers: { Authorization: `Bearer ${accessToken}` } });
                 if (downloadRes.ok) {
                     const json = await downloadRes.json();
                     allOrders = json.orders || [];
-                    showToast(`Data dimuat dari Drive (${allOrders.length} order)`);
+                    showToast(`Data dimuat (${allOrders.length} order)`);
                 } else allOrders = [];
             } else {
                 allOrders = [];
                 await saveToDrive(true);
-                showToast('File baru dibuat di Drive');
+                showToast('File baru dibuat');
             }
             renderPage();
             checkAndNotifyExpiredBookings();
@@ -350,13 +395,12 @@
         } catch (err) {
             console.error(err);
             syncStatusSpan.textContent = '⚠️ error';
-            showToast('Gagal baca Drive: ' + err.message, true);
+            showToast('Gagal baca Drive', true);
         }
     }
 
     async function saveToDrive(silent = false) {
         if (!await ensureValidToken()) return false;
-        syncStatusSpan.textContent = '⏳ sync...';
         try {
             const fileContent = JSON.stringify({ lastUpdate: new Date().toISOString(), orders: allOrders }, null, 2);
             const blob = new Blob([fileContent], { type: 'application/json' });
@@ -373,29 +417,49 @@
             } else {
                 await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', { method: 'POST', headers: { Authorization: `Bearer ${accessToken}` }, body: form });
             }
-            syncStatusSpan.textContent = '☁️ online';
             if (!silent) showToast('✅ Data tersimpan ke Drive');
             return true;
         } catch (err) {
-            console.error(err);
-            syncStatusSpan.textContent = '⚠️ error';
-            if (!silent) showToast('Gagal simpan Drive: ' + err.message, true);
+            if (!silent) showToast('Gagal simpan', true);
             return false;
         }
     }
 
     async function autoSync() { if (isLoggedIn && isTokenValid()) await saveToDrive(true); }
 
-    // ========== CRUD ==========
+    // ========== CRUD dengan loading ==========
     function generateId() { return 'ORD-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6).toUpperCase(); }
-    async function addOrder(orderData) { orderData.id = generateId(); orderData.timestamp = new Date().toISOString(); allOrders.unshift(orderData); renderPage(); await autoSync(); checkAndNotifyExpiredBookings(); }
-    async function updateOrderStatus(orderId, newStatus) { const idx = allOrders.findIndex(o => o.id === orderId); if (idx >= 0) { allOrders[idx].status_order = newStatus; allOrders[idx].timestamp = new Date().toISOString(); renderPage(); await autoSync(); checkAndNotifyExpiredBookings(); return true; } return false; }
-    async function deleteOrder(orderId) { allOrders = allOrders.filter(o => o.id !== orderId); renderPage(); await autoSync(); checkAndNotifyExpiredBookings(); }
+    async function addOrder(orderData) {
+        orderData.id = generateId();
+        orderData.timestamp = new Date().toISOString();
+        allOrders.unshift(orderData);
+        renderPage();
+        await withLoading(autoSync(), "Menyimpan order...");
+        checkAndNotifyExpiredBookings();
+    }
+    async function updateOrderStatus(orderId, newStatus) {
+        const idx = allOrders.findIndex(o => o.id === orderId);
+        if (idx >= 0) {
+            allOrders[idx].status_order = newStatus;
+            allOrders[idx].timestamp = new Date().toISOString();
+            renderPage();
+            await withLoading(autoSync(), "Mengubah status...");
+            checkAndNotifyExpiredBookings();
+            return true;
+        }
+        return false;
+    }
+    async function deleteOrder(orderId) {
+        allOrders = allOrders.filter(o => o.id !== orderId);
+        renderPage();
+        await withLoading(autoSync(), "Menghapus order...");
+        checkAndNotifyExpiredBookings();
+    }
 
     // ========== RENDER ==========
     function renderPage() {
         if (!isLoggedIn || !isTokenValid()) {
-            mainDiv.innerHTML = `<div class="empty-state">🔐 Gunakan akun bersama: <strong>${SHARED_ACCOUNT_EMAIL}</strong><br><br><button onclick="login()" style="background:#4285f4;">Login dengan Google</button><br><br><small>Pastikan login dengan akun di atas agar semua perangkat sinkron.</small></div>`;
+            mainDiv.innerHTML = `<div class="empty-state">🔐 Gunakan akun: <strong>${SHARED_ACCOUNT_EMAIL}</strong><br><br><button onclick="login()" style="background:#4285f4;">Login Google</button><br><br><small>Pastikan login akun di atas</small></div>`;
             return;
         }
         if (currentPage === 'buat') renderBuatOrder();
@@ -411,7 +475,7 @@
             <div class="form-group"><label>👤 Nama Pelanggan</label><input id="nama" placeholder="Nama lengkap"></div>
             <div class="form-group"><label>📱 WhatsApp</label><input id="wa" placeholder="08123456789"></div>
             <div class="form-group"><label>📦 Barang</label><input id="barang" placeholder="Nama barang"></div>
-            <div class="form-group"><label>📍 Alamat (opsional)</label><textarea id="alamat" rows="2"></textarea></div>
+            <div class="form-group"><label>📍 Alamat (opsional)</label><textarea id="alamat" rows="4" placeholder="Alamat lengkap..."></textarea></div>
             <div class="btn-row">
                 <button onclick="prosesSekarang()">⚡ Proses</button>
                 <button onclick="bookingOrder()" style="background:#f4b400;">📅 Booking</button>
@@ -419,7 +483,7 @@
         </div>`;
     }
 
-    window.prosesSekarang = async () => { const data = ambilForm(); if(data) { data.status_order = 'setup_qc'; await addOrder(data); showToast('Order masuk ke Setup & QC'); resetForm(); } };
+    window.prosesSekarang = async () => { const data = ambilForm(); if(data) { data.status_order = 'setup_qc'; await addOrder(data); showToast('Order masuk Setup & QC'); resetForm(); } };
     window.bookingOrder = async () => { const data = ambilForm(); if(data) { data.status_order = 'booking'; await addOrder(data); showToast('Booking tersimpan'); resetForm(); } };
     function ambilForm() {
         const tanggal = document.getElementById('tgl')?.value;
@@ -438,11 +502,10 @@
         const countSetup = allOrders.filter(o => o.status_order === 'setup_qc').length;
         const countPacking = allOrders.filter(o => o.status_order === 'packing').length;
         const countAntar = allOrders.filter(o => o.status_order === 'antar_cod').length;
-
         const tabs = [
             { key: 'booking', label: `📅 Booking (${countBooking})` },
             { key: 'setup_qc', label: `⚙️ Setup & QC (${countSetup})` },
-            { key: 'packing', label: `📦 Packing & Kirim (${countPacking})` },
+            { key: 'packing', label: `📦 Packing (${countPacking})` },
             { key: 'antar_cod', label: `🏍️ Antar/Cod (${countAntar})` }
         ];
         let tabsHtml = `<div class="tab-bar">`;
@@ -524,8 +587,7 @@
     // ========== REFRESH MANUAL ==========
     async function manualRefresh() {
         if (!await ensureValidToken()) return;
-        showToast('Menyegarkan data dari Drive...');
-        await loadDataFromDrive();
+        await withLoading(loadDataFromDrive(), "Menyegarkan data...");
     }
 
     // ========== NAVIGASI ==========
@@ -541,10 +603,10 @@
             updateLoginUI();
             const refreshed = await refreshTokenIfNeeded();
             if (refreshed) {
-                await loadDataFromDrive();
+                await withLoading(loadDataFromDrive(), "Memuat data...");
                 startTokenRefreshTimer();
             } else {
-                showToast('Sesi berakhir, silakan login ulang', true);
+                showToast('Sesi berakhir, login ulang', true);
                 logout();
             }
         } else {
