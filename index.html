@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Agenda Kerja - Multi Perangkat Satu Akun</title>
+    <title>Agenda Kerja - Sesi Panjang Otomatis</title>
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Segoe UI', Roboto, sans-serif; background: #e8eaed; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
@@ -51,7 +51,7 @@
 <body>
 <div class="app-container">
     <div class="header">
-        <div class="header-left">Agenda Kerja <span id="syncStatus" style="font-size:12px; background:rgba(255,255,255,0.2); padding:4px 8px; border-radius:20px;">🔒 offline</span></div>
+        <div class="header-left">📋 Agenda Kerja <span id="syncStatus" style="font-size:12px; background:rgba(255,255,255,0.2); padding:4px 8px; border-radius:20px;">🔒 offline</span></div>
         <div class="header-actions">
             <button class="header-icon-btn" id="refreshBtn" title="Refresh data dari Drive">🔄</button>
             <button class="header-icon-btn" id="backupLocalBtn" title="Backup ke perangkat">💾</button>
@@ -80,8 +80,7 @@
     const CLIENT_ID = '290927486841-g81rcscpq89o88rvsp9ttteecipm92ih.apps.googleusercontent.com';
     const SCOPES = 'https://www.googleapis.com/auth/drive.file';
     const FILE_NAME = 'agenda_orders.json';
-    // GANTI DENGAN EMAIL AKUN BERSAMA
-    const SHARED_ACCOUNT_EMAIL = 'hahabotproduction@gmail.com'; // <-- GANTI
+    const SHARED_ACCOUNT_EMAIL = 'hahabotproduction@gmail.com'; // GANTI DENGAN EMAIL BERSAMA
 
     let tokenClient = null;
     let accessToken = null;
@@ -92,6 +91,7 @@
     let currentSubTab = 'booking';
     let riwayatFilterDate = '';
     let riwayatFilterStatus = '';
+    let refreshInterval = null;
 
     const mainDiv = document.getElementById('mainContent');
     const loginBtn = document.getElementById('loginBtn');
@@ -112,9 +112,10 @@
     // ========== TOKEN STORAGE ==========
     function saveTokenToStorage(token, expiresIn) {
         localStorage.setItem('drive_access_token', token);
-        localStorage.setItem('drive_token_expiry', Date.now() + (expiresIn * 1000));
+        const expiry = Date.now() + (expiresIn * 1000);
+        localStorage.setItem('drive_token_expiry', expiry);
         accessToken = token;
-        tokenExpiry = Date.now() + (expiresIn * 1000);
+        tokenExpiry = expiry;
     }
 
     function loadTokenFromStorage() {
@@ -135,7 +136,41 @@
         tokenExpiry = 0;
     }
 
-    function isTokenValid() { return accessToken && tokenExpiry > Date.now(); }
+    function isTokenValid() {
+        return accessToken && tokenExpiry > Date.now();
+    }
+
+    // ========== SILENT TOKEN REFRESH ==========
+    async function refreshTokenIfNeeded() {
+        if (!isLoggedIn || !tokenClient) return false;
+        const timeToExpiry = tokenExpiry - Date.now();
+        if (timeToExpiry < 300000) { // kurang dari 5 menit
+            console.log("Token mendekati kadaluwarsa, refresh...");
+            return new Promise((resolve) => {
+                tokenClient.requestAccessToken({ prompt: '' }, (resp) => {
+                    if (resp && !resp.error) {
+                        saveTokenToStorage(resp.access_token, resp.expires_in);
+                        console.log("Token refreshed");
+                        showToast("Sesi diperpanjang", false);
+                        resolve(true);
+                    } else {
+                        console.warn("Refresh gagal, perlu login ulang");
+                        resolve(false);
+                    }
+                });
+            });
+        }
+        return true;
+    }
+
+    function startTokenRefreshTimer() {
+        if (refreshInterval) clearInterval(refreshInterval);
+        refreshInterval = setInterval(async () => {
+            if (isLoggedIn && isTokenValid()) {
+                await refreshTokenIfNeeded();
+            }
+        }, 60000);
+    }
 
     // ========== BACKUP LOCAL ==========
     function backupLocal() {
@@ -196,6 +231,7 @@
                 updateLoginUI();
                 showToast('✅ Login berhasil, sinkronisasi data...');
                 loadDataFromDrive();
+                startTokenRefreshTimer();
             },
         });
     }
@@ -207,6 +243,7 @@
     }
 
     function logout() {
+        if (refreshInterval) clearInterval(refreshInterval);
         clearTokenStorage();
         accessToken = null;
         isLoggedIn = false;
@@ -230,8 +267,21 @@
         }
     }
 
+    async function ensureValidToken() {
+        if (!isLoggedIn) return false;
+        if (!isTokenValid()) {
+            const refreshed = await refreshTokenIfNeeded();
+            if (!refreshed) {
+                showToast('Sesi habis, silakan login ulang', true);
+                logout();
+                return false;
+            }
+        }
+        return true;
+    }
+
     async function loadDataFromDrive() {
-        if (!isLoggedIn || !isTokenValid()) return;
+        if (!await ensureValidToken()) return;
         syncStatusSpan.textContent = '⏳ sync...';
         try {
             const searchUrl = `https://www.googleapis.com/drive/v3/files?q=name='${FILE_NAME}' and trashed=false&fields=files(id,name)`;
@@ -261,7 +311,7 @@
     }
 
     async function saveToDrive(silent = false) {
-        if (!isLoggedIn || !isTokenValid()) return false;
+        if (!await ensureValidToken()) return false;
         syncStatusSpan.textContent = '⏳ sync...';
         try {
             const fileContent = JSON.stringify({ lastUpdate: new Date().toISOString(), orders: allOrders }, null, 2);
@@ -429,10 +479,7 @@
 
     // ========== REFRESH MANUAL ==========
     async function manualRefresh() {
-        if (!isLoggedIn || !isTokenValid()) {
-            showToast('Anda belum login', true);
-            return;
-        }
+        if (!await ensureValidToken()) return;
         showToast('Menyegarkan data dari Drive...');
         await loadDataFromDrive();
     }
@@ -444,8 +491,21 @@
     // ========== INIT ==========
     async function init() {
         await initTokenClient();
-        if (loadTokenFromStorage()) { isLoggedIn = true; updateLoginUI(); await loadDataFromDrive(); }
-        else { updateLoginUI(); renderPage(); }
+        if (loadTokenFromStorage()) {
+            isLoggedIn = true;
+            updateLoginUI();
+            const refreshed = await refreshTokenIfNeeded();
+            if (refreshed) {
+                await loadDataFromDrive();
+                startTokenRefreshTimer();
+            } else {
+                showToast('Sesi berakhir, silakan login ulang', true);
+                logout();
+            }
+        } else {
+            updateLoginUI();
+            renderPage();
+        }
         loginBtn.onclick = login;
         logoutBtn.onclick = logout;
         document.getElementById('backupLocalBtn').onclick = backupLocal;
